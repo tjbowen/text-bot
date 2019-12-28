@@ -3,7 +3,7 @@ const express = require('express')
 const app = express()
 const crypto = require('crypto')
 const cookie = require('cookie')
-const nonce = require('nonce')
+const nonce = require('nonce')()
 const querystring = require('querystring')
 const request = require('request-promise')
 const logger = require('morgan')
@@ -29,7 +29,6 @@ app.get('/shopify', (req, res) => {
             '&scope=' + scopes +
             '&state=' + state +
             '&redirect_uri=' + redirectUri
-        console.log('initial state from nonce is ' + state)
         res.cookie('state', state)
         res.redirect(installUrl)
     } else {
@@ -39,13 +38,8 @@ app.get('/shopify', (req, res) => {
 
 app.get('/shopify/callback', (req, res) => {
     const { shop, hmac, code, state } = req.query
-    // state coming from query not matching state in cookie??
     const stateCookie = cookie.parse(req.headers.cookie).state
-// issues with state params
-    console.log('state is ' + state)
-    console.log('stateCookie is ' + stateCookie)
     if (state !== stateCookie){
-        console.log(req.query)
         return res.status(403).send('Request origin cannot be verified')
     }
 
